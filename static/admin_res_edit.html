@@ -1,0 +1,79 @@
+{% extends 'admin.html' %}
+
+{% block content %}
+<div class="edit">
+<h1>Resource Editor</h1>
+
+{% if resource %}
+<h3>Editing: {{ resource.name }}</h3>
+
+<form action="{{ upload_action }}" method="post">
+<input type="hidden" name="name" value="{{ resource.name }}">
+<input type="hidden" name="edit" value="true">
+<textarea name="upfile" id="upfile" style="position:relative;width:700px;height:400px">
+{{ resource.text }}
+</textarea>
+<br>
+<input type="submit" value="Save">
+</form>
+
+<script>
+// try to load a nice editor
+window.onload = function() {
+    var baseUrl = "/ace/";
+    function load(path, module, callback) {
+        path = baseUrl + path;
+        if (!load.scripts[path]) {
+            load.scripts[path] = {
+                loaded: false,
+                callbacks: [callback]
+                };
+            var head = document.getElementsByTagName('head')[0];
+            var s = document.createElement('script');
+            function c() {
+                if (window.__ace_shadowed__ && window.__ace_shadowed__.define.modules[module]) {
+                    load.scripts[path].loaded = true;
+                    load.scripts[path].callbacks.forEach(function(callback) {
+                        callback();
+                    });
+                } else {
+                    setTimeout(c, 50);
+                }
+            };
+            s.src = path;
+            head.appendChild(s);
+            c();
+        } else if (load.scripts[path].loaded) {
+            callback();
+        } else {
+            load.scripts[path].callbacks.push(callback);
+        }
+    };
+    load.scripts = {};
+    window.__ace_shadowed_load__ = load;
+    load('ace.js', 'text!ace/css/editor.css', function() {
+        var ace = window.__ace_shadowed__;
+        ace.options = {
+            mode: '{{ mode }}',
+            theme: 'textmate',
+            gutter: 'false',
+            fontSize: '12px',
+            softWrap: 'off',
+            showPrintMargin: 'false',
+            useSoftTabs: 'true',
+            showInvisibles: 'false'
+        };
+        var Event = ace.require('pilot/event');
+        var el = document.getElementById("upfile");
+        ace.transformTextarea(el);
+    });
+};
+</script>
+{% else %}
+
+Invalid resource
+
+{% endif %}
+
+</div>
+{% endblock %}

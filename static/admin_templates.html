@@ -1,0 +1,101 @@
+{% extends 'admin.html' %}
+
+{% block head %}
+{% if redir %}
+<meta http-equiv="refresh" content="0;url={{ redir }}" />
+{% endif %}
+
+<style type="text/css">
+#id_data {
+position: relative;
+width: 700px;
+height: 400px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>Templates</h1>
+
+<div class="list template">
+{% for t in templates %}
+<a href="?id={{ t.key.id }}">{{ t.name }}</a>
+{% empty %}
+No Templates created yet
+{% endfor %}
+{% if templates and template %}
+| <a href="?">CREATE NEW</a>
+{% endif %}
+</div>
+
+<div class="edit displays">
+{% if template %}
+<h3>Editing "{{ template.name }}"<h3>
+{% else %}
+<h3>New Template</h3>
+{% endif %}
+
+<form action="{{ action }}" method="POST">
+<table>
+{{ form.as_table }}
+<tr><td colspan="2">
+        <input type="submit" name="submit" value="Submit">
+</td></tr>
+</table>
+</form>
+</div>
+
+<script>
+// try to load a nice editor
+window.onload = function() {
+    var baseUrl = "/ace/";
+    function load(path, module, callback) {
+        path = baseUrl + path;
+        if (!load.scripts[path]) {
+            load.scripts[path] = {
+                loaded: false,
+                callbacks: [callback]
+                };
+            var head = document.getElementsByTagName('head')[0];
+            var s = document.createElement('script');
+            function c() {
+                if (window.__ace_shadowed__ && window.__ace_shadowed__.define.modules[module]) {
+                    load.scripts[path].loaded = true;
+                    load.scripts[path].callbacks.forEach(function(callback) {
+                        callback();
+                    });
+                } else {
+                    setTimeout(c, 50);
+                }
+            };
+            s.src = path;
+            head.appendChild(s);
+            c();
+        } else if (load.scripts[path].loaded) {
+            callback();
+        } else {
+            load.scripts[path].callbacks.push(callback);
+        }
+    };
+    load.scripts = {};
+    window.__ace_shadowed_load__ = load;
+    load('ace.js', 'text!ace/css/editor.css', function() {
+        var ace = window.__ace_shadowed__;
+        ace.options = {
+            mode: 'html',
+            theme: 'textmate',
+            gutter: 'false',
+            fontSize: '12px',
+            softWrap: 'off',
+            showPrintMargin: 'false',
+            useSoftTabs: 'true',
+            showInvisibles: 'false'
+        };
+        var Event = ace.require('pilot/event');
+        var el = document.getElementById("id_data");
+        ace.transformTextarea(el);
+    });
+};
+</script>
+
+{% endblock %}

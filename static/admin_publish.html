@@ -1,0 +1,32 @@
+{% extends 'admin.html' %}
+
+{% block content %}
+<div class="edit">
+<h3>Publishing</h3>
+
+<div>
+We can automatically publish the pages that have changed through SFTP using a Java applet.
+<br><br>
+The login settings can be adjusted below. If everything is correct, click on the following link:
+<br><br>
+<blockquote>
+<a href="?go=true">Begin Publishing</a>
+</blockquote>
+</div>
+
+<div>
+<h4>Settings</h4>
+<form action="{{ action }}" method="POST">
+<table>
+{% for form in forms %}
+<tr><td>{{ form.prefix }}</td><td>{{ form.value }}</td></tr>
+{% endfor %}
+<tr><td colspan="2">
+        <input type="submit" name="submit" value="Submit">
+</td></tr>
+</table>
+</form>
+</div>
+
+</div>
+{% endblock %}

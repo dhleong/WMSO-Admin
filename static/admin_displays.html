@@ -1,0 +1,40 @@
+{% extends 'admin.html' %}
+
+{% block content %}
+<h1>Displays</h1>
+
+<div class="list displays">
+{% for d in displays %}
+<a href="?id={{ d.key.id }}">{{ d.name }}</a>
+{% empty %}
+No displays created yet
+{% endfor %}
+{% if displays and display %}
+| <a href="?">CREATE NEW</a>
+{% endif %}
+</div>
+
+<div class="edit displays">
+{% if display %}
+<h3>Editing "{{ display.name }}"<h3>
+{% else %}
+<h3>New Display</h3>
+{% endif %}
+
+<form action="{{ action }}" method="POST">
+<table>
+{{ form.as_table }}
+<tr><td colspan="2">
+        <input type="submit" name="submit" value="Submit">
+</td></tr>
+</table>
+</form>
+</div>
+
+{% if display %}
+<div>
+<a href="update?id={{ display.key.id }}">Update this display</a>
+</div>
+{% endif %}
+
+{% endblock %}

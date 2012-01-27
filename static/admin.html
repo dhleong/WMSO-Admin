@@ -1,0 +1,23 @@
+<html>
+<head>
+<title>Admin</title>
+{% block head %}{% endblock %}
+</head>
+<body>
+<div class="navigation">
+
+<a href="/admin/update">Update Displays</a> |
+<a href="/admin/displays">Manage Displays</a> |
+<a href="/admin/templates">Manage Templates</a> |
+<a href="/admin/pages">Manage Pages</a> |
+<a href="/admin/res">Resources</a> |
+<a href="/admin/publish">Publish</a> |
+<a href="/" target="_blank">Preview</a>
+
+</div>
+
+<div class="content">
+{% block content %}{% endblock %}
+</div>
+</body>
+</html>

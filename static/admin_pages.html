@@ -1,0 +1,40 @@
+{% extends 'admin.html' %}
+
+{% block content %}
+<h1>Pages</h1>
+
+<div class="list page">
+{% for p in pages %}
+<a href="?id={{ p.key.id }}">{{ p.name }}</a>
+{% empty %}
+No Pages created yet
+{% endfor %}
+{% if pages and page %}
+| <a href="?">CREATE NEW</a>
+{% endif %}
+</div>
+
+<div class="edit displays">
+{% if page %}
+<h3>Editing "{{ page.name }}"<h3>
+{% else %}
+<h3>New Page</h3>
+{% endif %}
+
+<form action="{{ action }}" method="POST">
+<table>
+{{ form.as_table }}
+<tr><td colspan="2">
+        <input type="submit" name="submit" value="Submit">
+</td></tr>
+</table>
+</form>
+</div>
+
+{% if display %}
+<div>
+<a href="update?id={{ display.key.id }}">Update this display</a>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,23 @@
+application: wmso-admin
+version: 2
+runtime: python
+api_version: 1
+
+handlers:
+- url: /ace
+  static_dir: static/ace
+  
+- url: /bin
+  static_dir: static/bin
+
+- url: /pix
+  static_dir: static/pix
+
+- url: /admin/res.*
+  script: res.py
+
+- url: /admin.*
+  script: admin.py
+
+- url: .*
+  script: main.py

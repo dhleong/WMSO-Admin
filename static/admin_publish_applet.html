@@ -1,0 +1,33 @@
+{% extends 'admin.html' %}
+
+{% block content %}
+<div class="edit">
+<h3>Publishing</h3>
+
+<div>
+This requires Java to be installed on your system. Allow the applet to load, and follow
+the instructions below.
+<br><br>
+If it says you need to update the settings, you may do so <a href="?">here </a>
+</div>
+
+<div>
+<applet code="net/dhleong/wmso/PageTransfer.class" 
+	codebase="/"
+	archive="/bin/page-transfer.jar" 
+	width="600" height="300"
+    alt="PageTransfer applet"> 
+
+    <param name="host" value="{{ DOC_ROOT }}" />
+    {% for p in params %}
+    <param name="{{ p.name }}" value="{{ p.value }}" />
+    {% endfor %}
+Your browser is completely ignoring the &lt;APPLET&gt; tag!
+ 
+</applet> 
+
+
+</div>
+
+</div>
+{% endblock %}

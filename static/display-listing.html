@@ -1,0 +1,29 @@
+{% extends 'admin_update.html' %}
+
+{% block update_content %}
+<div>
+<form action="{{ action }}" method="POST">
+<table>
+{% for form in my_vars %}
+    {% if forloop.last %}
+    <tr><th colspan="2">NEW ENTRY:</th></tr>
+    {% endif %}
+    {{ form.as_table }}
+    {% if not forloop.last %}
+        <tr><td><label for="delete-{{ form.prefix }}">Delete?</label></td>
+            <td><input type="checkbox" id="delete-{{ form.prefix }}" name="delete-{{ form.prefix }}"></td></tr>
+        <tr><td>{% if not forloop.first %}<input type="button" onclick="location.href='?id={{ display.id }}&up={{ form.prefix }}';" value="^">{% endif %}</td>
+            <td>
+            {% if forloop.revcounter0 != 1 %}
+            <input type="button" onclick="location.href='?id={{ display.id }}&down={{ form.prefix }}';" value="v">
+            {% endif %}
+            </td></tr>
+    {% endif %}
+{% endfor %}
+<tr><td colspan="2">
+        <input type="submit" name="submit" value="Submit">
+</td></tr>
+</table>
+</form>
+</div>
+{% endblock %}
