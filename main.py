@@ -13,6 +13,7 @@ from google.appengine.ext.webapp import util
 from django.template import Template, Context
 
 import display
+import display.serial as serial
 import page
 import res
 
@@ -27,19 +28,25 @@ class MainHandler(webapp.RequestHandler):
             res.handle_view(self, link)
             return
 
-        q = page.DbPage.all()
-        q.filter('link = ', link)
-
-        dbPage = q.get()
-        if not dbPage:
-            # TODO proper 404 headers and such
-            self.response.out.write('no such page')
-            return
-
-        pg = page.Page(dbPage)
-
         template_vars = {}
-        pg.build_template(template_vars)
+
+        # check if it's a serial page
+        pg = serial.match(link)
+        if pg:
+            pg.build_template(link, template_vars)
+        else:
+            # more static page
+            q = page.DbPage.all()
+            q.filter('link = ', link)
+
+            dbPage = q.get()
+            if not dbPage:
+                # TODO proper 404 headers and such
+                self.response.out.write('no such page')
+                return
+
+            pg = page.Page(dbPage)
+            pg.build_template(template_vars)
 
         t = Template(pg.get_template())
         self.response.out.write(t.render(Context(template_vars)))

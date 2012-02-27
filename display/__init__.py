@@ -13,7 +13,7 @@
 #
 from google.appengine.ext import db
 
-ALL_CLASSES = ['BaseDisplay', 'ConcertDisplay', 'ExtendedDisplay', 'ListingDisplay']
+ALL_CLASSES = ['BaseDisplay', 'ConcertDisplay', 'ExtendedDisplay', 'ListingDisplay','SerialDisplay']
 # build list of Display classes
 #for k in globals().keys():
     #try:

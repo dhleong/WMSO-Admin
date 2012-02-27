@@ -1,0 +1,18 @@
+{% extends 'admin_update.html' %}
+
+{% block update_content %}
+<div>
+<form action="{{ action }}" method="POST">
+<table>
+{% for form in my_vars %}
+    {{ form.as_table }}
+{% empty %}
+Invalid post
+{% endfor %}
+<tr><td colspan="2">
+        <input type="submit" name="submit" value="Submit">
+</td></tr>
+</table>
+</form>
+</div>
+{% endblock %}
