@@ -28,7 +28,7 @@ def match(link):
         q = db.GqlQuery("SELECT * FROM Display WHERE display_type = :1",
             'SerialDisplay')
         for d in q:
-            serial_displays.append(d.name)
+            serial_displays.append(str(d.key()))
                 
         serial_list = []
         q = db.GqlQuery("SELECT * FROM DbPage")
@@ -38,7 +38,7 @@ def match(link):
                     serial_list.append(r.link)
                     break
 
-        memcache.set('resources', serial_list)
+        memcache.set('serials', serial_list)
 
     for prefix in serial_list:
         if link.find(prefix) == 0:

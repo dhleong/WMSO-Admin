@@ -172,6 +172,10 @@ class PageHandler(webapp.RequestHandler):
         if form.is_valid():
             form.save()
 
+            # force udpate of serials
+            # TODO only do this if the page has/had a serial display
+            memcache.delete('serials')
+
         template_values['form'] = form
 
         self.response.out.write(template.render('static/admin_pages.html', template_values))
