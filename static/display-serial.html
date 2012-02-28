@@ -30,7 +30,7 @@
 <h3>Edit old post</h3>
 <ul>
 {% for post in posts %}
-<li><a href="?id={{ display.id }}&m=edit&post={{ post.uid }}">{{ post.uid }}</a></li>
+<li><a href="?id={{ display.id }}&m=edit&uid={{ post.uid }}">{{ post.uid }}</a></li>
 {% empty %}
 None
 {% endfor %}

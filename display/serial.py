@@ -4,11 +4,13 @@
 #
 
 import os
+import logging
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
 from google.appengine.dist import use_library
 #use_library('django', '1.2')
 
+from google.appengine.api import memcache
 from google.appengine.ext.webapp import template
 from google.appengine.ext.db import djangoforms
 from google.appengine.ext import db
@@ -44,6 +46,9 @@ def match(link):
             return SerialPage(q.get())
 
     return None
+
+def _name2prefix(name):
+    return name.lower().replace(' ','_')
 
 class SerialPost(db.Model):
 
@@ -91,7 +96,7 @@ class SerialVar(db.Model):
 class SerialVarForm(djangoforms.ModelForm):
     class Meta:
         model = SerialVar
-        exclude = ['post', 'val_short', 'val_long', 'val_date', 'val_type']
+        exclude = ['post', 'val_short', 'val_long', 'val_date']
 
 def FilledSerialVarForm(*args, **kwargs):
     '''Dynamically create a filled form entry with only the chosen val_type visible'''
@@ -177,12 +182,14 @@ class SerialDisplay(AbstractDisplay):
                 post = q.get()
 
                 if post:
+                    template_values['post'] = post
+
                     q = SerialVar.all()
                     q.filter('post = ', post)
 
                     for v in q:
                         f = FilledSerialVarForm(instance=v,\
-                            prefix=v.key().id())
+                            prefix=_name2prefix(v.name))
                         my_vars.append(f)
             else:
                 # new one. create forms from spec
@@ -192,7 +199,7 @@ class SerialDisplay(AbstractDisplay):
                 for v in q:
                     var = SerialVar(display=self.display,\
                         name=v.name,val_type=v.val_type)
-                    f = FilledSerialVarForm(instance=var)
+                    f = FilledSerialVarForm(instance=var,prefix=_name2prefix(v.name))
                     my_vars.append(f)
 
             template_values['my_vars'] = my_vars
@@ -200,7 +207,7 @@ class SerialDisplay(AbstractDisplay):
                 .render('static/display-serial-edit.html',\
                     template_values))
 
-    def build_and_save(self, handler):
+    def build_spec_and_save(self, handler):
         '''Build the list of base vars for a POST operation, updating entities 
         as needed. This method is intended to be run in a transaction
         '''
@@ -233,13 +240,58 @@ class SerialDisplay(AbstractDisplay):
 
         return my_vars
 
+    def build_and_save(self, handler):
+        '''Build the list of vars for a POST operation, updating entities 
+        as needed. This method is intended to be run in a transaction
+        '''
+        # create the post if necessary
+        post_key = handler.request.get('post_key')
+        existing = {}
+        if post_key:
+            post = SerialPost.get_by_id(int(post_key))
+
+            q = SerialVar.all()
+            q.filter('post = ', post)
+            for var in q:
+                existing[_name2prefix(var.name)] = var
+
+        else:
+            # new post
+            post = SerialPost(display=self.display.key(),\
+                uid=handler.request.get('uid'))
+            post.put()
+
+
+        q = SerialVarSpec.all()
+        q.filter('display = ', self.display)
+
+        my_vars = []
+        # update/create vars as needed
+        for disp in q:
+            prefix = _name2prefix(disp.name)
+            if prefix in existing:
+                currVar = FilledSerialVarForm(prefix=prefix, \
+                    data=handler.request.POST, instance=existing[prefix])
+            else:
+                currVar = FilledSerialVarForm(prefix=prefix, \
+                    data=handler.request.POST)
+
+            if currVar.is_valid():
+                ent = currVar.save(commit=False)
+                ent.post = post.key()
+
+            my_vars.append(currVar)
+
+        return post, my_vars
+
     def post(self, handler, template_values):
+        super(SerialDisplay, self).post(handler, template_values)
+
         mode = handler.request.get('m')
         if not mode:
-            super(SerialDisplay, self).post(handler, template_values)
             
             #my_vars = db.run_in_transaction(self.build_and_save, handler)
-            my_vars = self.build_and_save(handler)
+            my_vars = self.build_spec_and_save(handler)
 
             # add option for a new var
             my_vars.append(SerialVarSpecForm(prefix='new'))
@@ -253,4 +305,9 @@ class SerialDisplay(AbstractDisplay):
 
         elif mode == 'edit':
             # create/update a post
-            pass
+            post, my_vars = self.build_and_save(handler)
+            template_values['post'] = post
+            template_values['my_vars'] = my_vars
+            handler.response.out.write(template
+                .render('static/display-serial-edit.html',\
+                    template_values))

@@ -3,7 +3,11 @@
 {% block update_content %}
 <div>
 <form action="{{ action }}" method="POST">
+{% if post %}
+<input type="hidden" name="post_key" value="{{ post.key.id }}">
+{% endif %}
 <table>
+<tr><td><b>Unique ID:</b></td><td><input type="text" name="uid" value="{{ post.uid }}"></td></tr>
 {% for form in my_vars %}
     {{ form.as_table }}
 {% empty %}
