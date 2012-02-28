@@ -20,6 +20,7 @@ from google.appengine.ext.db import djangoforms
 from django import forms
 
 import display
+import display.serial as serial
 import page
 import fields
 import settings
@@ -291,15 +292,19 @@ class SyncHandler(webapp.RequestHandler):
         # query resources
         resources = res.Resource.all()
 
+        # query serial posts
+        serials = serial.SerialPost.all()
+
         # filter by last_sync, if we have it
         if sync:
             last_time = datetime.datetime.fromtimestamp(time.mktime(time.strptime(sync.value, self.TIME_FORMAT)))
 
             pages.filter('last_update > ', last_time)
             resources.filter('last_update > ', last_time)
+            serials.filter('last_update > ', last_time)
 
         # sum counts
-        total_count = pages.count() + resources.count()
+        total_count = pages.count() + resources.count() + serials.count()
 
         # print 
         self.response.out.write("%d\n" % total_count)
@@ -307,6 +312,17 @@ class SyncHandler(webapp.RequestHandler):
             self.response.out.write("%s\n" % p.link)
         for r in resources:
             self.response.out.write("%s\n" % r.name)
+
+        displayLink = {} # mapping cache for convenience
+        for s in serials:
+            dkey = str(s.display.key())
+            if dkey not in displayLink:
+                # figure out the prefix associated with this
+                for p in pages:
+                    if dkey in p.displays:
+                        displayLink[dkey] = p.link
+                        break
+            self.response.out.write("%s%s\n" % (displayLink[dkey],s.uid))
         
         # update
         if self.request.get('commit'):
