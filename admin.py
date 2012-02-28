@@ -11,6 +11,7 @@ import time, datetime
 from google.appengine.dist import use_library
 use_library('django', '1.2')
 
+from google.appengine.api import memcache
 from google.appengine.api import users
 from google.appengine.ext import webapp, db
 from google.appengine.ext.webapp import util, template
