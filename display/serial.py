@@ -35,15 +35,15 @@ def match(link):
         for r in q:
             for display in r.displays:
                 if display in serial_displays:
-                    serial_list.append(r.link)
+                    serial_list.append((display, r.link))
                     break
 
         memcache.set('serials', serial_list)
 
-    for prefix in serial_list:
+    for display, prefix in serial_list:
         if link.find(prefix) == 0:
             q = db.GqlQuery("SELECT * FROM DbPage WHERE link = :1", prefix)
-            return SerialPage(q.get())
+            return SerialPage(q.get(), display)
 
     return None
 
@@ -127,8 +127,12 @@ class SerialPage:
     '''
     Special version of Page for serials
     '''
-    def __init__(self, dbPage):
+    def __init__(self, dbPage, display):
+        '''
+        display will be the string representation of its key
+        '''
         self.instance = dbPage
+        self.display = display
 
     def get_template(self):
         '''Return the template as a string'''
@@ -136,9 +140,26 @@ class SerialPage:
         return self.instance.template.data
 
     def build_template(self, link, template_vals):
-        # TODO
-        pass
+        if link == self.instance.link:
+            # index page
+            # TODO
+            pass
+        else:
+            # individual post
+            uid = link[len(self.instance.link):]
+            logging.info("UID: %s" % uid)
 
+            q = SerialPost.all()
+            q.filter('display =', db.Key(self.display))
+            q.filter('uid =', uid)
+
+            post = q.get()
+            template_vals['post'] = post
+            if post:
+                q = SerialVar.all()
+                q.filter('post =', post)
+                for v in q:
+                    template_vals[_name2prefix(v.name)] = v.get_value()
 
 class SerialDisplay(AbstractDisplay):
 
