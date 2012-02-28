@@ -300,6 +300,7 @@ class SerialDisplay(AbstractDisplay):
             if currVar.is_valid():
                 ent = currVar.save(commit=False)
                 ent.post = post.key()
+                ent.put()
 
             my_vars.append(currVar)
 
